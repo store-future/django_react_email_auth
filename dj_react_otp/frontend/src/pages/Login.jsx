@@ -1,3 +1,6 @@
+// response.data is a dictionary what django is sending from backend like in handleotp
+// {message: 'OTP sent to your email.', otp: '9daba8'} it is the jsonresponse from backend 
+
 import React, { useState } from "react";
 import axios from "axios"; // For making API calls
 import { useNavigate } from "react-router-dom";
@@ -18,15 +21,17 @@ function LoginPage() {
 
     try {
       const response = await axios.post("http://127.0.0.1:8000/api/send-otp/", { email });
+      console.log("Response Data:", response.data); 
 
-      if (response.data.message) {
+      if (response.data) {
         setOtpSent(true); // OTP has been sent
         setError(""); // Clear any previous error message
       }
     } catch (err) {
-      setError("Failed to send OTP. Please try again.");
+      setError(err.response.data.error);
     }
   };
+
 
   // Function to handle OTP verification
   const handleVerifyOtp = async () => {
@@ -39,7 +44,7 @@ function LoginPage() {
 
       if (response.data.success) {
         // Successful login
-        alert("OTP verified successfully! Redirecting to Feedback page.");
+        alert(response.data.message);
         navigate("/feedback"); // Redirect to Feedback page
       } else {
         setError("Invalid OTP. Please try again.");
@@ -56,6 +61,13 @@ function LoginPage() {
   return (
     <div className="container mt-5">
       <div className="card shadow-lg p-4">
+      <div className="text-center mt-2">
+          <img
+            src={process.env.PUBLIC_URL + '/winlinelogo.png'} // If placed in the public folder
+            alt="Logo"
+            style={{ width: '196px', height: 'auto' }} // Adjust size as needed
+          />
+        </div>
         <h2 className="text-center mb-4">Login</h2>
         <form>
           {/* Email Input */}

@@ -24,4 +24,13 @@ class OtpToken(models.Model):
     
     def __str__(self):
         return self.user.username
-    
+
+class Feedback (models.Model):
+    # user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="feedbacks")
+    product = models.CharField(max_length=50)
+    description = models.TextField()
+    rating = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Feedback by {self.product}"

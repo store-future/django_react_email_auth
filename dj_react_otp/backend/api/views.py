@@ -1,4 +1,3 @@
-
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
@@ -7,6 +6,10 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from .models import OtpToken, CustomUser  # Import your models
+from .serializers import *
+from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
 User = get_user_model()
 
 @csrf_exempt
@@ -20,7 +23,7 @@ def send_otp_view(request):
             if not email:
                 return JsonResponse({"error": "Email is required."}, status=400)
         
-            print(email)
+            print(f"send_otp_request_data :{data}")
 
             # Check if user exists
             try:
@@ -79,3 +82,27 @@ def verify_otp_view(request):
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
     return JsonResponse({"error": "Invalid request method."}, status=405)
+
+@api_view(['POST'])
+def FeedbackHandle (request):
+    if request.method =="POST":
+
+        #check if user is auhtenticated or not
+        # if not request.user.is_authenticated:
+        #     return JsonResponse({"message" : "user is not authenticated"} , status=status.HTTP_401_UNAUTHORIZED)
+
+        # Get the data from the request
+        data = request.data
+        # Manually add the logged-in user to the feedback data
+        # data['user'] = request.user.id
+
+        # Serialize the data
+        serializer = FeedbackSerializer(data = data)
+        print(f"serializer data {serializer}")
+
+        # Validate and save the data
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse({"message": "Feedback submitted successfully!"}, status=status.HTTP_201_CREATED)
+        else:
+            return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
