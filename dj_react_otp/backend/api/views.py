@@ -10,6 +10,9 @@ from .serializers import *
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
+
 User = get_user_model()
 
 @csrf_exempt
@@ -64,6 +67,7 @@ def verify_otp_view(request):
             otp_code = data.get('otp')
             print(f"data :{data}")
 
+
             if not email or not otp_code:
                 return JsonResponse({"error": "Email and OTP are required."}, status=400)
 
@@ -72,10 +76,11 @@ def verify_otp_view(request):
                 user = CustomUser.objects.get(email=email)
                 otp = OtpToken.objects.filter(user=user, otp_code=otp_code).first()
                 print(f"user {user} opt {otp} otpcode databse {otp.otp_code}")
+                
                 if not otp or otp.otp_expires_at < now():
                     return JsonResponse({"error": "Invalid or expired OTP."}, status=400)
-
-                # OTP is valid
+                
+                # OTP is valid create session
                 return JsonResponse({ "success":True ,"message": "OTP verified successfully."}, status=200)
             except CustomUser.DoesNotExist:
                 return JsonResponse({"error": "User not found."}, status=404)
@@ -83,26 +88,54 @@ def verify_otp_view(request):
             return JsonResponse({"error": str(e)}, status=500)
     return JsonResponse({"error": "Invalid request method."}, status=405)
 
-@api_view(['POST'])
+@csrf_exempt
 def FeedbackHandle (request):
     if request.method =="POST":
+        
 
         #check if user is auhtenticated or not
         # if not request.user.is_authenticated:
         #     return JsonResponse({"message" : "user is not authenticated"} , status=status.HTTP_401_UNAUTHORIZED)
-
-        # Get the data from the request
-        data = request.data
         # Manually add the logged-in user to the feedback data
         # data['user'] = request.user.id
 
+
+        # Get the data from the request
+        data = json.loads(request.body)
+        
+
+        # required fields for sending mail
+        data['product'] = ' & '.join(data['product'])         #converting array to string
+        data_product = data['product']
+        data_to_email = data['email']
+        data_rating = data['rating']
+        data_description = data['description']
+
+        # user = CustomUser.objects.get(email=data_to_email)
+        # print(f"user {user}")
+
+        print(f"data received from frontend : {data}")
+
         # Serialize the data
         serializer = FeedbackSerializer(data = data)
-        print(f"serializer data {serializer}")
+        # print(f"serializer data {serializer}")
 
-        # Validate and save the data
+        # # Validate and save the data
         if serializer.is_valid():
             serializer.save()
+            
+            # Send mail to director
+            subject = f"Feedback for {data_product} "
+            message = f"Hi Team,\n\nYou have received a new feedback from\nId : {data_to_email},\nProduct : {data_product},\nRating :{data_rating} Star.\n\nThanks & Regards \nWinline Technologis pvt ltd. "
+            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL,['parashuram.s@winlinetech.com'])
+            # send_mail(subject, message, settings.DEFAULT_FROM_EMAIL,['dhananjayasharma45@gmail.com'])
+
+            # Send mail to feedback user
+            subject = f"Feedback for {data_product} "
+            message = f"Hi user,\n\nThankyou for your valuable feedback for the product : {data_product} with {data_rating} Star Rating.\n\nThanks & Regards \nWinline Technologis pvt ltd. "
+            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL,[data_to_email])
+
+
             return JsonResponse({"message": "Feedback submitted successfully!"}, status=status.HTTP_201_CREATED)
         else:
             return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

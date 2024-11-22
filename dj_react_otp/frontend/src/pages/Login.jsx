@@ -4,6 +4,7 @@
 import React, { useState } from "react";
 import axios from "axios"; // For making API calls
 import { useNavigate } from "react-router-dom";
+import logo from "../img/winlinelogo.png";
 
 function LoginPage() {
   const [email, setEmail] = useState(""); // User's email
@@ -14,6 +15,11 @@ function LoginPage() {
 
   // Function to handle the email submission
   const handleSendOtp = async () => {
+
+    // printing sending data to backend
+    // const sendotpdata = {email , otpSent , otp , error} ;
+    console.log("sending login data to backend :" , email);
+
     if (!email) {
       setError("Please enter your email.");
       return;
@@ -21,10 +27,13 @@ function LoginPage() {
 
     try {
       const response = await axios.post("http://127.0.0.1:8000/api/send-otp/", { email });
-      console.log("Response Data:", response.data); 
+
+      // printing received data from backend
+      console.log("response data of feedback recieved from backend", response.json); 
 
       if (response.data) {
         setOtpSent(true); // OTP has been sent
+        localStorage.setItem("email", email);
         setError(""); // Clear any previous error message
       }
     } catch (err) {
@@ -35,17 +44,24 @@ function LoginPage() {
 
   // Function to handle OTP verification
   const handleVerifyOtp = async () => {
+
+    // printing sending data to backend to console
+    const handledata = {email,otp}
+    console.log("sending login data to backend :" , email);
+
     try {
       const response = await axios.post("http://127.0.0.1:8000/api/verify-otp/", {
         email,
         otp,
       });
-      console.log("Backend response: for verify otp", response.data);
+
+    // printing sending data to backend to console
+      console.log("Backend response for verify otp :", response.data);
 
       if (response.data.success) {
         // Successful login
         alert(response.data.message);
-        navigate("/feedback"); // Redirect to Feedback page
+        navigate("/feedback"); 
       } else {
         setError("Invalid OTP. Please try again.");
       }
@@ -59,18 +75,26 @@ function LoginPage() {
   };
 
   return (
-    <div className="container mt-5">
-      <div className="card shadow-lg p-4">
-      <div className="text-center mt-2">
-          <img
-            src={process.env.PUBLIC_URL + '/winlinelogo.png'} // If placed in the public folder
-            alt="Logo"
-            style={{ width: '196px', height: 'auto' }} // Adjust size as needed
-          />
+    <div
+      className="d-flex justify-content-center align-items-center vh-100"
+      style={{ backgroundColor: "#f8f9fa" }} // Light background color
+    >
+       <div className="text-center mb-4">
+       <img
+        src={logo} // Use the imported logo here
+        alt="Logo"
+        style={{
+          width: "215px",
+          height: "auto",
+          marginTop: "-338px",
+          marginRight: "-373px",
+        }}
+      />
         </div>
-        <h2 className="text-center mb-4">Login</h2>
+      <div className="card shadow p-4" style={{ width: "400px", borderRadius: "10px" }}>
+       
+        {/* <h2 className="text-center mb-4">Login</h2> */}
         <form>
-          {/* Email Input */}
           {!otpSent && (
             <div className="mb-3">
               <label className="form-label">Email</label>
@@ -83,8 +107,6 @@ function LoginPage() {
               />
             </div>
           )}
-
-          {/* OTP Input */}
           {otpSent && (
             <div className="mb-3">
               <label className="form-label">OTP</label>
@@ -97,16 +119,13 @@ function LoginPage() {
               />
             </div>
           )}
-
-          {/* Error Message */}
           {error && <p className="text-danger">{error}</p>}
-
-          {/* Submit Button */}
           {!otpSent ? (
             <button
               type="button"
               className="btn btn-primary w-100"
               onClick={handleSendOtp}
+              style={{ backgroundColor: "forestgreen", borderColor: "white" }}
             >
               Send OTP
             </button>
@@ -115,6 +134,7 @@ function LoginPage() {
               type="button"
               className="btn btn-primary w-100"
               onClick={handleVerifyOtp}
+              style={{ backgroundColor: "forestgreen", borderColor: "white" }}
             >
               Verify OTP
             </button>

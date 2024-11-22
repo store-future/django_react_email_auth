@@ -50,6 +50,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
     'corsheaders.middleware.CorsMiddleware',                        #add here
 
 ]
@@ -148,3 +149,13 @@ EMAIL_HOST_USER = 'dhananjayasharma43@gmail.com'
 EMAIL_HOST_PASSWORD = 'xcti itwr sczx qxbu'
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False 
+
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES":[
+        'rest_framework.permissions.IsAuthenticated'
+    ],
+    'DEAFULT_AUTHENTICATION_CLASSES:' :[
+        'rest_framework.authentication.SessionAuthentcation'
+
+    ]
+}
