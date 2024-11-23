@@ -127,8 +127,8 @@ def FeedbackHandle (request):
             # Send mail to director
             subject = f"Feedback for {data_product} "
             message = f"Hi Team,\n\nYou have received a new feedback from\nId : {data_to_email},\nProduct : {data_product},\nRating :{data_rating} Star.\n\nThanks & Regards \nWinline Technologis pvt ltd. "
-            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL,['parashuram.s@winlinetech.com'])
-            # send_mail(subject, message, settings.DEFAULT_FROM_EMAIL,['dhananjayasharma45@gmail.com'])
+            # send_mail(subject, message, settings.DEFAULT_FROM_EMAIL,['parashuram.s@winlinetech.com'])
+            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL,['dhananjayasharma45@gmail.com'])
 
             # Send mail to feedback user
             subject = f"Feedback for {data_product} "

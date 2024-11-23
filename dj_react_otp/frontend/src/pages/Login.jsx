@@ -11,6 +11,7 @@ function LoginPage() {
   const [otpSent, setOtpSent] = useState(false); // To check if OTP has been sent
   const [otp, setOtp] = useState(""); // User's OTP input
   const [error, setError] = useState(""); // To display error messages
+  const [loading, setLoading] = useState(false); // New loading state
   const navigate = useNavigate(); // For navigation
 
   // Function to handle the email submission
@@ -24,6 +25,8 @@ function LoginPage() {
       setError("Please enter your email.");
       return;
     }
+    setLoading(true); // Start the loader
+    setError(""); // Clear previous errors
 
     try {
       const response = await axios.post("http://127.0.0.1:8000/api/send-otp/", { email });
@@ -38,6 +41,9 @@ function LoginPage() {
       }
     } catch (err) {
       setError(err.response.data.error);
+    }
+    finally {
+      setLoading(false); // Stop the loader
     }
   };
 
@@ -121,14 +127,26 @@ function LoginPage() {
           )}
           {error && <p className="text-danger">{error}</p>}
           {!otpSent ? (
-            <button
-              type="button"
-              className="btn btn-primary w-100"
-              onClick={handleSendOtp}
-              style={{ backgroundColor: "forestgreen", borderColor: "white" }}
-            >
-              Send OTP
-            </button>
+    <button
+    type="button"
+    className="btn btn-primary w-100"
+    onClick={handleSendOtp}
+    disabled={loading} // Disable the button when loading
+    style={{
+      backgroundColor: loading ? "#d3d3d3" : "forestgreen",
+      borderColor: "white",
+    }}
+  >
+    {loading ? (
+      <span
+        className="spinner-border spinner-border-sm"
+        role="status"
+        aria-hidden="true"
+      ></span>
+    ) : (
+      "Send OTP"
+    )}
+  </button>
           ) : (
             <button
               type="button"
